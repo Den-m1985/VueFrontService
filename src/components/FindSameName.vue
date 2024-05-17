@@ -1,5 +1,7 @@
 <script>
 import axios from 'axios'
+import Papa from 'papaparse'
+import XLSX from 'xlsx'
 //import Error from './ErrorLogin.vue'
 import { RouterLink } from 'vue-router'
 export default {
@@ -58,12 +60,106 @@ export default {
           document.getElementById('registration-error').style.display = 'block'
         }
       }
+    },
+    changeButton() {
+      document.getElementById('buttonContent').style.display = 'inline-block'
+      document.getElementById('loadingSpinner').style.display = 'none'
+    },
+
+    validateExcelFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result)
+          const workbook = XLSX.read(data, { type: 'array' })
+          const firstSheetName = workbook.SheetNames[0]
+          const worksheet = workbook.Sheets[firstSheetName]
+          const dataArray = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1
+          })
+          const requiredName1 = 'Товары (работы, услуги)'
+          const requiredName2 = 'Товар'
+          const requiredSum = 'Сумма'
+          let nameTrue = false
+          for (const row of dataArray) {
+            for (const str of row) {
+              if (str === requiredName1 || str === requiredName2) {
+                //console.log(row)
+                nameTrue = true
+              }
+              if (str === requiredSum && nameTrue) {
+                resolve(true)
+                return // stop processing
+              }
+            }
+          }
+          resolve(false) // false if the target string is not found
+        }
+        reader.onerror = (error) => {
+          reject('Error while reading the file')
+        }
+        reader.readAsArrayBuffer(file)
+      })
+    },
+
+    validateAndUpload() {
+      // Получаем ссылки на поля ввода
+      var file1Input = document.getElementById('formFile1')
+      var file2Input = document.getElementById('formFile2')
+      // Проверяем, были ли выбраны файлы
+      if (!file1Input.files[0]) {
+        // Если файл не выбран, добавляем классы Bootstrap для подсветки
+        file1Input.classList.add('is-invalid')
+        // Показываем сообщение об ошибке
+        document.getElementById('file1Error').style.display = 'block'
+        return // Прекращаем выполнение функции
+      } else {
+        // Если файл выбран, удаляем классы Bootstrap и скрываем сообщение об ошибке
+        file1Input.classList.remove('is-invalid')
+        document.getElementById('file1Error').style.display = 'none'
+      }
+      if (!file2Input.files[0]) {
+        file2Input.classList.add('is-invalid')
+        document.getElementById('file2Error').style.display = 'block'
+        return
+      } else {
+        file2Input.classList.remove('is-invalid')
+        document.getElementById('file2Error').style.display = 'none'
+      }
+      // Если оба файла выбраны, продолжаем выполнение кода, например, отправляем запрос на сервер
     }
+  },
+  //_______________________________________________________________________________
+  mounted() {
+    document.getElementById('formFile1').addEventListener('change', function () {
+      const file = this.files[0]
+      validateCSVFile(file)
+        .then((result) => {
+          if (result) {
+            document.getElementById('correctFileCSV').style.display = 'block'
+          } else {
+            document.getElementById('errorFileCSV').style.display = 'block'
+          }
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+    })
+    document.getElementById('formFile2').addEventListener('change', function () {
+      const file = this.files[0]
+      validateExcelFile(file)
+        .then((result) => {
+          if (result) {
+            document.getElementById('correctFileXLS').style.display = 'block'
+          } else {
+            document.getElementById('errorFileXLS').style.display = 'block'
+          }
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+    })
   }
-}
-function changeButton() {
-  document.getElementById('buttonContent').style.display = 'inline-block'
-  document.getElementById('loadingSpinner').style.display = 'none'
 }
 function validateCSVFile(file) {
   return new Promise((resolve, reject) => {
@@ -89,97 +185,6 @@ function validateCSVFile(file) {
       }
     })
   })
-}
-function validateExcelFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result)
-      const workbook = XLSX.read(data, { type: 'array' })
-      const firstSheetName = workbook.SheetNames[0]
-      const worksheet = workbook.Sheets[firstSheetName]
-      const dataArray = XLSX.utils.sheet_to_json(worksheet, {
-        header: 1
-      })
-      const requiredName1 = 'Товары (работы, услуги)'
-      const requiredName2 = 'Товар'
-      const requiredSum = 'Сумма'
-      let nameTrue = false
-      for (const row of dataArray) {
-        for (const str of row) {
-          if (str === requiredName1 || str === requiredName2) {
-            //console.log(row)
-            nameTrue = true
-          }
-          if (str === requiredSum && nameTrue) {
-            resolve(true)
-            return // stop processing
-          }
-        }
-      }
-      resolve(false) // false if the target string is not found
-    }
-    reader.onerror = (error) => {
-      reject('Error while reading the file')
-    }
-    reader.readAsArrayBuffer(file)
-  })
-}
-
-document.getElementById('formFile1').addEventListener('change', function () {
-  const file = this.files[0]
-  validateCSVFile(file)
-    .then((result) => {
-      if (result) {
-        document.getElementById('correctFileCSV').style.display = 'block'
-      } else {
-        document.getElementById('errorFileCSV').style.display = 'block'
-      }
-    })
-    .catch((error) => {
-      console.error(error)
-    })
-})
-document.getElementById('formFile2').addEventListener('change', function () {
-  const file = this.files[0]
-  validateExcelFile(file)
-    .then((result) => {
-      if (result) {
-        document.getElementById('correctFileXLS').style.display = 'block'
-      } else {
-        document.getElementById('errorFileXLS').style.display = 'block'
-      }
-    })
-    .catch((error) => {
-      console.error(error)
-    })
-})
-
-function validateAndUpload() {
-  // Получаем ссылки на поля ввода
-  var file1Input = document.getElementById('formFile1')
-  var file2Input = document.getElementById('formFile2')
-  // Проверяем, были ли выбраны файлы
-  if (!file1Input.files[0]) {
-    // Если файл не выбран, добавляем классы Bootstrap для подсветки
-    file1Input.classList.add('is-invalid')
-    // Показываем сообщение об ошибке
-    document.getElementById('file1Error').style.display = 'block'
-    return // Прекращаем выполнение функции
-  } else {
-    // Если файл выбран, удаляем классы Bootstrap и скрываем сообщение об ошибке
-    file1Input.classList.remove('is-invalid')
-    document.getElementById('file1Error').style.display = 'none'
-  }
-  if (!file2Input.files[0]) {
-    file2Input.classList.add('is-invalid')
-    document.getElementById('file2Error').style.display = 'block'
-    return
-  } else {
-    file2Input.classList.remove('is-invalid')
-    document.getElementById('file2Error').style.display = 'none'
-  }
-  // Если оба файла выбраны, продолжаем выполнение кода, например, отправляем запрос на сервер
 }
 </script>
 
