@@ -1,17 +1,16 @@
 <script>
 import axios from 'axios'
 import Papa from 'papaparse'
-import XLSX from 'xlsx'
-//import Error from './ErrorLogin.vue'
+import { read as XlsxRead, utils as XlsxUtils } from 'xlsx'
 import { RouterLink } from 'vue-router'
 export default {
   name: 'findSameName',
   components: {
-    //Error,
     RouterLink
   },
   methods: {
     async findSameNameSubmit() {
+      console.log('findSameNameSubmit')
       validateAndUpload()
       document.getElementById('buttonContent').style.display = 'none'
       document.getElementById('loadingSpinner').style.display = 'inline-block'
@@ -60,77 +59,17 @@ export default {
           document.getElementById('registration-error').style.display = 'block'
         }
       }
-    },
-    changeButton() {
-      document.getElementById('buttonContent').style.display = 'inline-block'
-      document.getElementById('loadingSpinner').style.display = 'none'
-    },
-
-    validateExcelFile(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const data = new Uint8Array(e.target.result)
-          const workbook = XLSX.read(data, { type: 'array' })
-          const firstSheetName = workbook.SheetNames[0]
-          const worksheet = workbook.Sheets[firstSheetName]
-          const dataArray = XLSX.utils.sheet_to_json(worksheet, {
-            header: 1
-          })
-          const requiredName1 = 'Товары (работы, услуги)'
-          const requiredName2 = 'Товар'
-          const requiredSum = 'Сумма'
-          let nameTrue = false
-          for (const row of dataArray) {
-            for (const str of row) {
-              if (str === requiredName1 || str === requiredName2) {
-                //console.log(row)
-                nameTrue = true
-              }
-              if (str === requiredSum && nameTrue) {
-                resolve(true)
-                return // stop processing
-              }
-            }
-          }
-          resolve(false) // false if the target string is not found
-        }
-        reader.onerror = (error) => {
-          reject('Error while reading the file')
-        }
-        reader.readAsArrayBuffer(file)
-      })
-    },
-
-    validateAndUpload() {
-      // Получаем ссылки на поля ввода
-      var file1Input = document.getElementById('formFile1')
-      var file2Input = document.getElementById('formFile2')
-      // Проверяем, были ли выбраны файлы
-      if (!file1Input.files[0]) {
-        // Если файл не выбран, добавляем классы Bootstrap для подсветки
-        file1Input.classList.add('is-invalid')
-        // Показываем сообщение об ошибке
-        document.getElementById('file1Error').style.display = 'block'
-        return // Прекращаем выполнение функции
-      } else {
-        // Если файл выбран, удаляем классы Bootstrap и скрываем сообщение об ошибке
-        file1Input.classList.remove('is-invalid')
-        document.getElementById('file1Error').style.display = 'none'
-      }
-      if (!file2Input.files[0]) {
-        file2Input.classList.add('is-invalid')
-        document.getElementById('file2Error').style.display = 'block'
-        return
-      } else {
-        file2Input.classList.remove('is-invalid')
-        document.getElementById('file2Error').style.display = 'none'
-      }
-      // Если оба файла выбраны, продолжаем выполнение кода, например, отправляем запрос на сервер
     }
   },
   //_______________________________________________________________________________
   mounted() {
+    document.addEventListener('DOMContentLoaded', function () {
+      //if (isAccessTokenExpired()) {
+      //  document.getElementById('LoginAccess').style.display = 'block'
+      //} else {
+      document.getElementById('uploadButton').style.display = 'block'
+      //}
+    })
     document.getElementById('formFile1').addEventListener('change', function () {
       const file = this.files[0]
       validateCSVFile(file)
@@ -161,6 +100,36 @@ export default {
     })
   }
 }
+function changeButton() {
+  document.getElementById('buttonContent').style.display = 'inline-block'
+  document.getElementById('loadingSpinner').style.display = 'none'
+}
+function validateAndUpload() {
+  // Получаем ссылки на поля ввода
+  var file1Input = document.getElementById('formFile1')
+  var file2Input = document.getElementById('formFile2')
+  // Проверяем, были ли выбраны файлы
+  if (!file1Input.files[0]) {
+    // Если файл не выбран, добавляем классы Bootstrap для подсветки
+    file1Input.classList.add('is-invalid')
+    // Показываем сообщение об ошибке
+    document.getElementById('file1Error').style.display = 'block'
+    return // Прекращаем выполнение функции
+  } else {
+    // Если файл выбран, удаляем классы Bootstrap и скрываем сообщение об ошибке
+    file1Input.classList.remove('is-invalid')
+    document.getElementById('file1Error').style.display = 'none'
+  }
+  if (!file2Input.files[0]) {
+    file2Input.classList.add('is-invalid')
+    document.getElementById('file2Error').style.display = 'block'
+    return
+  } else {
+    file2Input.classList.remove('is-invalid')
+    document.getElementById('file2Error').style.display = 'none'
+  }
+  // Если оба файла выбраны, продолжаем выполнение кода, например, отправляем запрос на сервер
+}
 function validateCSVFile(file) {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
@@ -186,10 +155,63 @@ function validateCSVFile(file) {
     })
   })
 }
+function validateExcelFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result)
+      const workbook = XlsxRead(data, { type: 'array' })
+      const firstSheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[firstSheetName]
+      const dataArray = XlsxUtils.sheet_to_json(worksheet, {
+        header: 1
+      })
+      const requiredName1 = 'Товары (работы, услуги)'
+      const requiredName2 = 'Товар'
+      const requiredSum = 'Сумма'
+      let nameTrue = false
+      for (const row of dataArray) {
+        for (const str of row) {
+          if (str === requiredName1 || str === requiredName2) {
+            //console.log(row)
+            nameTrue = true
+          }
+          if (str === requiredSum && nameTrue) {
+            resolve(true)
+            return // stop processing
+          }
+        }
+      }
+      resolve(false) // false if the target string is not found
+    }
+    reader.onerror = (error) => {
+      reject('Error while reading the file')
+    }
+    reader.readAsArrayBuffer(file)
+  })
+}
+function isAccessTokenExpired() {
+  const accessToken = localStorage.getItem('accessToken')
+  if (accessToken === null || accessToken === 'null' || accessToken === undefined) {
+    // Токен не существует, считаем, что он истек
+    //console.log("Токен не существует");
+    return true
+  }
+  try {
+    // Парсим токен, чтобы получить информацию о сроке действия
+    const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]))
+    const expiryTime = tokenPayload.exp * 1000 // Переводим из секунд в миллисекунды
+    // Сравниваем с текущим временем
+    return Date.now() >= expiryTime
+  } catch (error) {
+    //console.error('Ошибка при разборе токена:', error);
+    return true // В случае ошибки считаем, что токен истек
+  }
+}
 </script>
 
 <template>
-  <div class="container px-4 text-center" @submit.prevent="findSameNameSubmit">
+  <div class="container px-4 text-center">
     <div class="card mt-5">
       <label for="formFile" class="form-label">ФАЙЛ ИСХОДНИК С РАСШИРЕНИЕМ .csv</label>
       <p>должно быть: | Название | Артикул | Цена | Количество |</p>
@@ -217,22 +239,25 @@ function validateCSVFile(file) {
       </div>
     </div>
 
-    <button
-      type="button"
-      class="btn btn-outline-primary mt-5"
-      id="uploadButton"
-      style="display: none"
-    >
-      <span id="buttonContent">Загрузить и обработать</span>
-      <div
-        id="loadingSpinner"
-        class="spinner-border text-primary"
-        role="status"
+    <form @submit.prevent="findSameNameSubmit">
+      <button
+        type="submit"
+        class="btn btn-outline-primary mt-5"
+        id="uploadButton"
         style="display: none"
       >
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </button>
+        <span id="buttonContent">Загрузить и обработать</span>
+        <div
+          id="loadingSpinner"
+          class="spinner-border text-primary"
+          role="status"
+          style="display: none"
+        >
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </button>
+    </form>
+
     <div id="forbiddenAccess" style="display: none; color: red">
       Запрет от сервера. Надо авторизоваться.
     </div>

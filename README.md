@@ -64,6 +64,3 @@ npm install bootstrap jquery jQuery popper.js --save
 npm install axios
 
 npm install papaparse
-
-попробовать установить xlsx
-https://joaomede.github.io/vue3-xlsx/guide/#installation
