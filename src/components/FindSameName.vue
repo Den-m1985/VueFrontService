@@ -8,9 +8,9 @@ export default {
   components: {
     RouterLink
   },
+  
   methods: {
     async findSameNameSubmit() {
-      console.log('findSameNameSubmit')
       validateAndUpload()
       document.getElementById('buttonContent').style.display = 'none'
       document.getElementById('loadingSpinner').style.display = 'inline-block'
@@ -25,36 +25,38 @@ export default {
 
       try {
         // в файле axios.js пропиали путь localhost... чтоб не писать его много раз
-        const responce = await axios.post('resource/service/findSameName', formData)
-        console.log(`responce status: ${responce.status}`)
-        console.log(responce)
-
-        if (responce.status === 200) {
-          this.data = responce.data
-          changeButton()
-        } else {
-          // Unexpected response status
-          changeButton()
-          console.error(`Unexpected response status: ${responce.status}`)
-        }
+        const responce = await axios.post('resource/service/findSameName', formData,
+          {
+            headers: {
+              Authorization: "Bearer " + accessToken,
+            },
+          })
+        changeButton()
+          //this.data = responce.data
+          const url = window.URL.createObjectURL(new Blob([responce.data]))
+          window.open(url, "_blank")
+          uploadButton.innerText = "Выполнено";
       } catch (error) {
+        changeButton()
+        uploadButton.innerText = "ОШИБКА";
         if (error.responce) {
           // Request made and server responded with a status code outside the 2xx range
-          changeButton()
           console.error(`Error response status: ${error.responce.status}`)
           if (error.responce.status === 500) {
             // Server error
             document.getElementById('login-error').style.display = 'block'
-            changeButton()
             console.error('Server error')
+          } else if (responce.status === 403) {
+            document.getElementById("forbiddenAccess").style.display = "block";
+            throw new Error("Forbidden access");
           }
         } else if (error.request) {
+          console.log(error.request.message)
           // Request made but no response received
-          changeButton()
           console.error('No response received')
+          document.getElementById("ServerFail").style.display = "block";
         } else {
           // Error setting up the request
-          changeButton()
           console.error('Error setting up the request')
           document.getElementById('registration-error').style.display = 'block'
         }
