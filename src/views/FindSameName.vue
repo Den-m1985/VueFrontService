@@ -2,13 +2,8 @@
 import axios from 'axios'
 import Papa from 'papaparse'
 import { read as XlsxRead, utils as XlsxUtils } from 'xlsx'
-import { RouterLink } from 'vue-router'
+//import { RouterLink } from 'vue-router'
 export default {
-  name: 'findSameName',
-  components: {
-    RouterLink
-  },
-  
   methods: {
     async findSameNameSubmit() {
       validateAndUpload()
@@ -20,25 +15,34 @@ export default {
       formData.append('file1', file1)
       formData.append('file2', file2)
       const accessToken = localStorage.getItem('accessToken')
-
-      //console.log('data {}', data)
-
       try {
         // в файле axios.js пропиали путь localhost... чтоб не писать его много раз
-        const responce = await axios.post('resource/service/findSameName', formData,
-          {
-            headers: {
-              Authorization: "Bearer " + accessToken,
-            },
-          })
+        const responce = await axios.post('resource/service/findSameName', formData, {
+          headers: {
+            Authorization: 'Bearer ' + accessToken
+          },
+          responseType: 'arraybuffer'
+        })
         changeButton()
-          //this.data = responce.data
-          const url = window.URL.createObjectURL(new Blob([responce.data]))
-          window.open(url, "_blank")
-          uploadButton.innerText = "Выполнено";
+        const contentDisposition = responce.headers['content-disposition']
+        const fileName = contentDisposition.split('filename="')[1].split('"')[0]
+        console.log('fileName {}', fileName)
+        const contentType = responce.headers['content-type']
+        const blob = new Blob([responce.data], { type: contentType })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', fileName)
+        //link.target = '_blank'
+        document.body.appendChild(link)
+        link.click()
+        link.parentNode.removeChild(link)
+
+        //window.open(url, '_blank')
+        uploadButton.innerText = 'Выполнено'
       } catch (error) {
         changeButton()
-        uploadButton.innerText = "ОШИБКА";
+        uploadButton.innerText = 'ОШИБКА'
         if (error.responce) {
           // Request made and server responded with a status code outside the 2xx range
           console.error(`Error response status: ${error.responce.status}`)
@@ -47,14 +51,14 @@ export default {
             document.getElementById('login-error').style.display = 'block'
             console.error('Server error')
           } else if (responce.status === 403) {
-            document.getElementById("forbiddenAccess").style.display = "block";
-            throw new Error("Forbidden access");
+            document.getElementById('forbiddenAccess').style.display = 'block'
+            throw new Error('Forbidden access')
           }
         } else if (error.request) {
           console.log(error.request.message)
           // Request made but no response received
           console.error('No response received')
-          document.getElementById("ServerFail").style.display = "block";
+          document.getElementById('ServerFail').style.display = 'block'
         } else {
           // Error setting up the request
           console.error('Error setting up the request')
@@ -66,11 +70,7 @@ export default {
   //_______________________________________________________________________________
   mounted() {
     document.addEventListener('DOMContentLoaded', function () {
-      //if (isAccessTokenExpired()) {
-      //  document.getElementById('LoginAccess').style.display = 'block'
-      //} else {
       document.getElementById('uploadButton').style.display = 'block'
-      //}
     })
     document.getElementById('formFile1').addEventListener('change', function () {
       const file = this.files[0]
@@ -191,24 +191,6 @@ function validateExcelFile(file) {
     }
     reader.readAsArrayBuffer(file)
   })
-}
-function isAccessTokenExpired() {
-  const accessToken = localStorage.getItem('accessToken')
-  if (accessToken === null || accessToken === 'null' || accessToken === undefined) {
-    // Токен не существует, считаем, что он истек
-    //console.log("Токен не существует");
-    return true
-  }
-  try {
-    // Парсим токен, чтобы получить информацию о сроке действия
-    const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]))
-    const expiryTime = tokenPayload.exp * 1000 // Переводим из секунд в миллисекунды
-    // Сравниваем с текущим временем
-    return Date.now() >= expiryTime
-  } catch (error) {
-    //console.error('Ошибка при разборе токена:', error);
-    return true // В случае ошибки считаем, что токен истек
-  }
 }
 </script>
 

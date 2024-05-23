@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import Contact from '../components/Contact.vue'
+import Contact from '../views/Contact.vue'
 import About from '../views/AboutView.vue'
+import FindSameName from '../views/FindSameName.vue'
 import Account from '../components/Account.vue'
 import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
-import FindSameName from '../components/FindSameName.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

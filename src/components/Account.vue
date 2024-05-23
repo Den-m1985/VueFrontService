@@ -1,4 +1,9 @@
 <script setup>
+function logout() {
+  localStorage.removeItem('username')
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('refreshToken')
+}
 </script>
 
 <template>
@@ -17,7 +22,7 @@
         <a href="/register">ЗАРЕГИСТРИРОВАТСЯ</a>
       </button>
     </div>
-    <form onsubmit="logout()">
+    <form @submit.prevent="logout">
       <div><input type="submit" id="logOutButton" value="ВЫЙТИ" /></div>
     </form>
   </div>
