@@ -7,45 +7,18 @@ import Account from '../components/Account.vue'
 import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView
-    },
-    {
-      path: '/contact',
-      name: 'contact',
-      component: Contact
-    },
-    {
-      path: '/about',
-      name: 'about',
-      component: About
-    },
-    {
-      path: '/account',
-      name: 'account',
-      component: Account
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: Login
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: Register
-    },
-    {
-      path: '/findSameName',
-      name: 'findSameName',
-      component: FindSameName
-    }
-  ]
-})
+const routes = [
+  { path: '/', component: HomeView },
+  { path: '/contact', component: Contact },
+  { path: '/about', component: About },
+  { path: '/account', component: Account },
+  { path: '/login', component: Login },
+  { path: '/register', component: Register },
+  { path: '/findSameName', component: FindSameName }
+]
 
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
 export default router

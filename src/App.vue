@@ -1,21 +1,11 @@
 <script>
-import { eventBus } from '../src/store/eventBus'
+import { useUser } from './store/useUser.js'
 
 export default {
-  data() {
+  setup() {
+    const { username } = useUser()
     return {
-      username: eventBus.username
-    }
-  },
-  mounted() {
-    this.username = eventBus.username
-  },
-  watch: {
-    'eventBus.username': {
-      handler(newUsername) {
-        this.username = newUsername
-      },
-      immediate: true
+      username
     }
   }
 }
@@ -38,7 +28,7 @@ export default {
             </li>-->
       <li class="nav-item">
         <RouterLink class="nav-link" to="/account">
-          <span v-text="username"></span>
+          <span>{{ username }}</span>
         </RouterLink>
       </li>
     </ul>

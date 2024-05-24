@@ -2,6 +2,7 @@
 import axios from 'axios'
 //import Error from './ErrorLogin.vue'
 import { RouterLink } from 'vue-router'
+import { useUser } from '../store/useUser'
 export default {
   name: 'login_user',
   components: {
@@ -49,10 +50,12 @@ export default {
           const username = JSON.stringify(decodedPayload)
           const parsedPayload = JSON.parse(username)
           const subValue = parsedPayload.sub
-
-          // Сохранение имени пользователя в локальное хранилище
-          localStorage.setItem('username', subValue)
           console.log('username ' + subValue)
+          // Сохранение имени пользователя в локальное хранилище
+
+          const { setUsername } = useUser()
+          setUsername(subValue)
+
           changeButton()
           this.$router.push('/')
         } else {
