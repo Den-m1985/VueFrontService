@@ -1,8 +1,9 @@
 <script>
-import axios from 'axios'
+//import axios from 'axios'
 //import Error from './ErrorLogin.vue'
 import { RouterLink } from 'vue-router'
 import { useUser } from '../store/useUser'
+import api from '../utils/api'
 export default {
   name: 'login_user',
   components: {
@@ -27,7 +28,8 @@ export default {
 
       try {
         // в файле axios.js пропиали путь localhost... чтоб не писать его много раз
-        const responce = await axios.post('auth/api/login', data)
+        //const responce = await axios.post('auth/api/login', data)
+        const responce = await api.post('auth/api/login', data)
         console.log(responce)
         if (responce.status === 200) {
           this.data = responce.data
