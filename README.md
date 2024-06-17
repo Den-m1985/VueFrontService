@@ -64,3 +64,10 @@ npm install bootstrap jquery jQuery popper.js --save
 npm install axios
 
 npm install papaparse
+
+
+For Linux:
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+    nvm install node
+    nvm use node
+
