@@ -1,6 +1,5 @@
 <script>
-//import axios from 'axios'
-import api from '../utils/api'
+import axios from '../axios'
 import Papa from 'papaparse'
 import { read as XlsxRead, utils as XlsxUtils } from 'xlsx'
 //import { RouterLink } from 'vue-router'
@@ -18,8 +17,7 @@ export default {
       const accessToken = localStorage.getItem('accessToken')
       try {
         // в файле axios.js прописали путь localhost... чтоб не писать его много раз
-        //const responce = await axios.post('resource/service/findSameName', formData, {
-        const responce = await api.post('resource/service/findSameName', formData, {
+        const responce = await axios.post('resource/service/findSameName', formData, {
           headers: {
             Authorization: 'Bearer ' + accessToken
           },
